@@ -28,6 +28,10 @@ def extract_numbers(s):
     return numbers[0] if numbers else 1
 
 
+def strip_numbers(s):
+    return re.sub(r"\d+", "", s)
+
+
 user_expr = st.text_input(
     "Expression", placeholder="Enter the expression (e.g., (x-2y)^7)"
 )
@@ -35,7 +39,7 @@ btn = st.button("Calculate")
 
 if btn:
     a, sign, b, n = extract_expression_components(user_expr)
-    if None in (a, sign, b, n):
+    if None in (a, sign, b, n) or not n.isdigit():
         st.error("Invalid expression. Please enter in the form (a+b)^n.")
     else:
         n = int(n)
@@ -49,6 +53,8 @@ if btn:
 
             # Create the term parts for x and y
             term_parts = []
+            a = strip_numbers(a)
+            b = strip_numbers(b)
             if n - i > 0:
                 term_parts.append(f"{a}^{n-i}" if n - i > 1 else f"{a}")
             if i > 0:
@@ -66,7 +72,9 @@ if btn:
                     term = f"{''.join(term_parts)}"
                 else:
                     term = f"{'' if coefficient == 1 else coefficient}{''.join(term_parts)}"
-                output.append(f"{term_sign}{term}")
+                output.append(
+                    f"{term_sign}{term}" if not term.startswith("-") else term
+                )
 
         # Correct initial sign and remove the first '+' if it exists
         formatted_output = "".join(output)
